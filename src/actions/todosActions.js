@@ -77,3 +77,35 @@ export const editTodo = (id, title) => {
       })
   }
 }
+
+export const addTodo = (addText) => {
+  return (dispatch) => {
+    dispatch({
+      type: 'SET_IS_CREATING',
+      payload: true,
+    })
+    return fetch('http://localhost:3005/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      body: JSON.stringify({
+        id: Date.now(),
+        title: addText,
+      }),
+    })
+      .then((data) => {
+        return data.json();
+      })
+      .then((todo) => {
+        dispatch({
+          type: 'ADD_TODO',
+          payload: todo,
+        })
+      })
+      .finally(() => {
+        dispatch({
+          type: 'SET_IS_CREATING',
+          payload: false,
+        })
+      })
+  }
+}

@@ -17,6 +17,9 @@ export const todosReducer = (state = initialTodosState, action) => {
       newArray.splice(indexToEdit, 1, action.payload);
       return newArray;
     }
+    case 'ADD_TODO': {
+      return [...state, action.payload]
+    }
     default:
       return state;
   }

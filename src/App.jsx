@@ -2,31 +2,23 @@ import { ToDoList } from './ToDoList/ToDoList'
 import styles from './App.module.css'
 import { useEffect, useState } from 'react';
 import { Button } from './Button/Button';
+import { fetchTodos } from './actions/todosActions';
+import { useSelector, useDispatch } from 'react-redux';
 
 export function App() {
-  const [todos, setTodos] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const todos = useSelector(state => state.todosState);
+  const isLoading = useSelector(state => state.processesState.isLoading);
   const [addText, setAddText] = useState('');
   const [filterText, setFilterText] = useState('');
   const [filterKey, setFilterKey] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [refreshToDos, setRefreshToDos] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [isSorted, setIsSorted] = useState(false);
 
-  const fetchTodos = (isSorted = false) => {
-    setIsLoading(true);
-    fetch(`http://localhost:3005/todos${isSorted ? '?_sort=title' : ''}`)
-      .then((loadedData) => loadedData.json())
-      .then((loadedToDos) => {
-        setTodos(loadedToDos);
-      })
-      .finally(() => setIsLoading(false));
-  }
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    fetchTodos();
+    dispatch(fetchTodos(isSorted));
   }, [refreshToDos]);
 
   const addToDo = () => {
@@ -44,35 +36,6 @@ export function App() {
         setAddText('')
       })
       .finally(() => setIsCreating(false));
-  }
-
-  const editToDo = (id) => {
-    const newTodoTitle = prompt('Отредактируйте задачу', '')
-
-    fetch(`http://localhost:3005/todos/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json;charset=utf-8' },
-      body: JSON.stringify({
-        id: id,
-        title: newTodoTitle,
-      }),
-    })
-      .then(() => {
-        setRefreshToDos(!refreshToDos);
-      })
-      .finally(() => setIsUpdating(false));
-  }
-
-  const deleteToDo = (id) => {
-    setIsDeleting(true);
-
-    fetch(`http://localhost:3005/todos/${id}`, {
-      method: 'DELETE',
-    })
-      .then(() => {
-        setRefreshToDos(!refreshToDos);
-      })
-      .finally(() => setIsDeleting(false));
   }
 
   const sortToDo = () => {
@@ -102,10 +65,6 @@ export function App() {
         {isLoading
           ? <div className='loader'>Loading...</div>
           : <ToDoList todos={filteredTodos}
-            onDeleteToDo={deleteToDo}
-            onEditToDo={editToDo}
-            isDeleting={isDeleting}
-            isUpdating={isUpdating}
             onSortToDo={sortToDo}
             onFilterToDo={filterTodo}
             isSorted={isSorted}
